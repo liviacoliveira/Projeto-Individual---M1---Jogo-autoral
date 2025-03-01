@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesseract Horizon</title> 
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script> <!-- importa a biblioteca Phaser 3 -->
+    <style> 
+        body { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        #planet-list { 
+            list-style-type: none; 
+            padding: 0; 
+        }
+    </style>
+</head>
+<body></body>
+
+<script>
+    const larguraJogo = 680; // define a largura da tela do jogo
+    const alturaJogo = 580; // define a altura da tela do jogo
+
+    const config = {
+        type: Phaser.AUTO, // o Phaser escolhe automaticamente entre WebGL e Canvas
+        width: larguraJogo, // define a largura da tela do jogo
+        height: alturaJogo, // define a altura da tela do jogo
+        physics: { 
+            default: 'arcade', // usa o sistema de física arcade
+            arcade: {
+                gravity: { y: 300 }, // define a gravidade do jogo
+                debug: false // desativa a exibição do modo de depuração da física
+            }
+        },
+        scene: { 
+            preload: preload, // carrega os recursos necessários
+            create: create, // cria os elementos da cena
+            update: update // atualiza a cena em tempo real
+        }
+    };
+
+    const game = new Phaser.Game(config); // cria uma instância do jogo com as configurações definidas
+
+    var player; // variável para o jogador
+    var buracoNegro; // variável para o buraco negro
+    var planetas = []; // array para armazenar os planetas
+    var pontuacao = 0; // variável para controlar a pontuação
+    var placar; // variável para exibir o placar
+    var fogo; // variável para o efeito de turbo
+    var teclado; // variável para os controles do teclado
+
+    function preload () {
+        this.load.image('background', '../assets/fundo.png'); // carrega a imagem de fundo
+        this.load.image('player', '../assets/astronauta.png'); // carrega a imagem do jogador
+        this.load.image('planet', '../assets/planeta.png'); // carrega a imagem do planeta
+        this.load.image('hole', '../assets/buraconegro.png'); // carrega a imagem do buraco negro
+        this.load.image('fire', '../assets/turbo.png'); // carrega a imagem do efeito de turbo
+    }
+
+    function create() {
+        this.add.image(larguraJogo / 2, alturaJogo / 2, 'background'); // adiciona o fundo ao centro da tela
+
+        player = this.physics.add.sprite(larguraJogo / 2, 0, 'player'); // cria o sprite do jogador
+        player.setCollideWorldBounds(true); // impede que o jogador saia da tela
+        player.setScale(0.07); // define o tamanho do jogador
+        player.body.setAllowGravity(false); // desativa a gravidade no jogador
+
+        fogo = this.add.sprite(player.x + 40, player.y, 'fire'); // cria o sprite do efeito de turbo
+        fogo.setVisible(false); // o efeito de turbo começa invisível
+        fogo.setScale(1); // define o tamanho do efeito de turbo 
+
+        teclado = this.input.keyboard.createCursorKeys(); // cria os controles do teclado (setas direcionais)
+
+        buracoNegro = this.physics.add.sprite(larguraJogo / 2, alturaJogo / 2, 'hole'); // cria o sprite do buraco negro
+        buracoNegro.setCollideWorldBounds(true); // impede que o buraco negro saia da tela
+        buracoNegro.setCircle(buracoNegro.width / 2); // define a forma do buraco negro como um círculo
+        buracoNegro.body.setAllowGravity(false); // desativa a gravidade no buraco negro
+        buracoNegro.setVelocity(
+            Phaser.Math.RND.between(-100, 100), 
+            Phaser.Math.RND.between(-100, 100)
+        ); // define a velocidade inicial do buraco negro
+
+        this.physics.add.collider(player, buracoNegro, gameOver, null, this); // adiciona a colisão entre o jogador e o buraco negro
+        this.physics.add.collider(buracoNegro, this.physics.world.bounds); // adiciona a colisão do buraco negro com as bordas da tela
+
+        // cria 3 planetas aleatórios
+        for (let i = 0; i < 3; i++) {
+            let planeta = this.physics.add.sprite(
+                Phaser.Math.RND.between(50, larguraJogo - 50),
+                Phaser.Math.RND.between(50, alturaJogo - 50),
+                'planet'
+            );
+            planeta.setScale(0.8); // define o tamanho do planeta
+            planeta.setCollideWorldBounds(true); // impede que os planetas saiam da tela
+            planeta.body.setAllowGravity(false); // desativa a gravidade nos planetas
+            planetas.push(planeta); // adiciona o planeta ao array
+            this.physics.add.overlap(player, planeta, atingirPlaneta, null, this); // detecta a colisão do jogador com os planetas
+        }
+
+        placar = this.add.text(50, 50, 'Planetas: ' + pontuacao, { fontSize: '45px', fill: '#FFFFFF' }); // exibe o placar
+    }
+
+    function update() {
+        // controle de movimento do jogador
+        if (teclado.left.isDown) {
+            player.setVelocityX(-160); // move o jogador para a esquerda
+            ativarTurbo(); // ativa o efeito de turbo
+        } else if (teclado.right.isDown) {
+            player.setVelocityX(160); // move o jogador para a direita
+            semTurbo(); // desativa o efeito de turbo
+        } else {
+            player.setVelocityX(0); // para o movimento do jogador
+            semTurbo(); // desativa o efeito de turbo
+        }
+
+        if (teclado.up.isDown) {
+            player.setVelocityY(-200); // move o jogador para cima
+        } else if (teclado.down.isDown) {
+            player.setVelocityY(200); // move o jogador para baixo
+        } else  {
+            player.setVelocityY(0); // para o movimento vertical do jogador
+        }
+
+        fogo.setPosition(player.x + 50, player.y); // atualiza a posição do efeito de turbo
+    }
+
+    function atingirPlaneta(player, planet) { 
+        pontuacao += 1; // aumenta a pontuação
+        placar.setText("Planetas: " + pontuacao); // atualiza o placar
+
+        let novaPosX = Phaser.Math.RND.between(50, larguraJogo - 50); // define uma nova posição para o planeta
+        let novaPosY = Phaser.Math.RND.between(50, alturaJogo - 50); // define uma nova posição para o planeta
+
+        planet.setPosition(novaPosX, novaPosY); // move o planeta para a nova posição
+    }
+
+    function ativarTurbo() {
+        fogo.setVisible(true); // torna o efeito de turbo visível
+        fogo.angle = 270; // define a rotação do efeito de turbo
+    }
+
+    function semTurbo() {
+        fogo.setVisible(false); // torna o efeito de turbo invisível
+    }
+
+    function gameOver() {
+        window.location.href = "gameOver.html"; // redireciona para a tela de game over
+    }
+</script>
+</body>
+</html>

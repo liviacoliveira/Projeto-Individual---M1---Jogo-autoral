@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"> <!-- Define a codificação de caracteres para suportar acentos e caracteres especiais -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Garante que a página seja responsiva -->
+    <title>Tesseract Horizon</title> 
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script> <!-- Importa a biblioteca Phaser 3 -->
+    <style>
+        /* Estiliza a página para centralizar o jogo na tela */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Garante que o jogo ocupe a altura total da tela */
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        larguraJogo = 680; // define a largura do jogo
+        alturaJogo = 580; // define a altura do jogo
+
+        const config = { // configurações do Phaser
+            type: Phaser.AUTO, // Phaser escolhe automaticamente WebGL ou Canvas
+            width: larguraJogo, // Define a largura do jogo como a definida anteriormente
+            height: alturaJogo, // Define a altura do jogo como a definida anteriormente
+            scene: { 
+                preload: preload, // Carrega os recursos do jogo
+                create: create,   // Configura os elementos do jogo
+                update: update    // Atualiza o jogo a cada frame
+            }
+        };
+
+        let game = new Phaser.Game(config); // cria uma variável com as configurações
+        let startButton; // cria variável de botão de iniciar o jogo
+
+        function preload() { // carrega os recursos do jogo
+            this.load.image('background', 'assets/fundo.png'); // Carrega a imagem de fundo 
+        }
+
+
+        function create() { // cria os elementos já carregados
+            
+            this.add.image(larguraJogo / 2, alturaJogo / 2, 'background'); // cria o fundo no centro da tela
+
+            let title = this.add.text(340, 100, 'Tesseract Horizon', { // cria o título no topo da tela
+                fontSize: '48px', // define o tamanho da fonte
+                fill: '#fff'      // define a cor do texto como branco
+            }).setOrigin(0.5); // centraliza o texto
+
+            startButton = this.add.text(340, 450, 'Iniciar Jogo', { // cria um botão de iniciar o jogo
+                fontSize: '32px',       // define o tamanho da fonte
+                fill: '#fff',           // define a cor do texto como branco
+                backgroundColor: '#f39c12', // define a cor de fundo do botão
+                padding: { x: 20, y: 10 }, // adiciona espaçamento interno ao botão
+            }).setOrigin(0.5) // centraliza o botão
+              .setInteractive(); // torna o botão clicável
+
+            startButton.on('pointerdown', () => { // quando o botão for clicado
+                window.location.href = 'jogo.html'; // redireciona para a página do jogo
+            });
+        }
+
+       
+        function update() { // função que atualiza o jogo
+        
+        }
+    </script>
+</body>
+</html>

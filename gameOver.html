@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"> <!-- define a codificação de caracteres para suportar caracteres especiais -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- garante que a página seja responsiva -->
+    <title>Tesseract Horizon</title> 
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script> <!-- importa a biblioteca Phaser 3 -->
+    <style>
+        body { 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Garante que o jogo ocupe a altura total da tela */
+            margin: 0; 
+        }
+    </style>
+</head>
+<body>
+    <script>
+        const larguraJogo = 680; // define a largura da tela do jogo
+        const alturaJogo = 580; // define a altura da tela do jogo
+
+        const config = {
+            type: Phaser.AUTO, // o Phaser escolhe automaticamente entre WebGL e Canvas
+            width: larguraJogo, // recupera a largura definida anteriormente
+            height: alturaJogo, // recupera a altura definida anteriormente
+            scene: { // define as funções principais da cena do jogo
+                preload: preload, // carrega os recursos necessários
+                create: create,   // cria os elementos da cena
+                update: update    // atualiza a cena em tempo real
+            }
+        };
+
+        let game = new Phaser.Game(config); // variável com  configurações definidas
+        let mainMenuButton; // variável do botão de menu principal
+
+        function preload() {
+            this.load.image('background', 'assets/fundo.png'); // carrega a imagem de fundo
+        }
+
+        function create() {
+            this.add.image(larguraJogo / 2, alturaJogo / 2, 'background'); // adiciona o fundo ao centro da tela
+
+            let title = this.add.text(340, 100, 'Game Over', { // adiciona o título "Game Over" na parte superior da tela
+                fontSize: '48px', // define o tamanho da fonte
+                fill: '#fff'      // define a cor do texto como branco
+            }).setOrigin(0.5); // centraliza o texto na posição definida
+
+            mainMenuButton = this.add.text(340, 450, 'Menu Principal', { // cria um botão para voltar ao menu principal
+                fontSize: '32px',       // define o tamanho da fonte
+                fill: '#fff',           // define a cor do texto como branco
+                backgroundColor: '#e74c3c', // define a cor de fundo do botão 
+                padding: { x: 20, y: 10 }, // adiciona espaçamento interno    
+            }).setOrigin(0.5) // centraliza o botão na tela
+              .setInteractive(); // torna o botão clicável
+
+            mainMenuButton.on('pointerdown', () => { // quando o botão for pressionado
+                window.location.href = 'index.html'; // redireciona para o menu principal
+            });
+        }
+
+        function update() { // atualiza o código
+           
+        }
+    </script>
+</body>
+</html>
